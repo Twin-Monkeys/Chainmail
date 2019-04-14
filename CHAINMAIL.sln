@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2036
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CHAINMAIL", "CHAINMAIL\CHAINMAIL.vcxproj", "{B539F0F0-77A0-494E-81B2-FE4E9D6F998C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B539F0F0-77A0-494E-81B2-FE4E9D6F998C}.Debug|x64.ActiveCfg = Debug|x64
+		{B539F0F0-77A0-494E-81B2-FE4E9D6F998C}.Debug|x64.Build.0 = Debug|x64
+		{B539F0F0-77A0-494E-81B2-FE4E9D6F998C}.Debug|x86.ActiveCfg = Debug|Win32
+		{B539F0F0-77A0-494E-81B2-FE4E9D6F998C}.Debug|x86.Build.0 = Debug|Win32
+		{B539F0F0-77A0-494E-81B2-FE4E9D6F998C}.Release|x64.ActiveCfg = Release|x64
+		{B539F0F0-77A0-494E-81B2-FE4E9D6F998C}.Release|x64.Build.0 = Release|x64
+		{B539F0F0-77A0-494E-81B2-FE4E9D6F998C}.Release|x86.ActiveCfg = Release|Win32
+		{B539F0F0-77A0-494E-81B2-FE4E9D6F998C}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AF717A5F-7DEB-4B67-AC4E-203E0B85EFDD}
+	EndGlobalSection
+EndGlobal

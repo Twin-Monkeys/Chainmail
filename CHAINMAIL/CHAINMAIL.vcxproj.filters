@@ -1,0 +1,93 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="소스 파일">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="헤더 파일">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="리소스 파일">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="소스 파일\data_structure">
+      <UniqueIdentifier>{f3bc7b3c-5026-4601-869a-9af3a6e3dcc0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\data_structure">
+      <UniqueIdentifier>{c03b1823-ae37-43e3-88d4-7f0f8934effc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\util">
+      <UniqueIdentifier>{cb69c604-a289-400c-95f3-af63e7dde36c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\util">
+      <UniqueIdentifier>{2b08d894-6a9c-4fba-acd9-a278f008e0ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\chainmail">
+      <UniqueIdentifier>{3fcb902b-4ded-4c61-b0d5-57f327389f41}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\chainmail">
+      <UniqueIdentifier>{8d86df6c-c267-4c27-bb51-0b21ccb8d8ad}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Vector3f.cpp">
+      <Filter>소스 파일\data_structure</Filter>
+    </ClCompile>
+    <ClCompile Include="MathUtility.cpp">
+      <Filter>소스 파일\util</Filter>
+    </ClCompile>
+    <ClCompile Include="Voxel.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Volume.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Index.cpp">
+      <Filter>소스 파일\data_structure</Filter>
+    </ClCompile>
+    <ClCompile Include="Chainmail.cpp">
+      <Filter>소스 파일\chainmail</Filter>
+    </ClCompile>
+    <ClCompile Include="Plasticity.cpp">
+      <Filter>소스 파일\data_structure</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Vector3f.h">
+      <Filter>헤더 파일\data_structure</Filter>
+    </ClInclude>
+    <ClInclude Include="MathUtility.h">
+      <Filter>헤더 파일\util</Filter>
+    </ClInclude>
+    <ClInclude Include="Point3f.h">
+      <Filter>헤더 파일\data_structure</Filter>
+    </ClInclude>
+    <ClInclude Include="Volume.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Voxel.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Chainmail.h">
+      <Filter>헤더 파일\chainmail</Filter>
+    </ClInclude>
+    <ClInclude Include="Constraint.h">
+      <Filter>헤더 파일\data_structure</Filter>
+    </ClInclude>
+    <ClInclude Include="Range.h">
+      <Filter>헤더 파일\data_structure</Filter>
+    </ClInclude>
+    <ClInclude Include="Index.h">
+      <Filter>헤더 파일\data_structure</Filter>
+    </ClInclude>
+    <ClInclude Include="Plasticity.h">
+      <Filter>헤더 파일\data_structure</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
