@@ -1,16 +1,30 @@
 #include <windows.h>
 #include <d3dx9.h>
 #include "Chainmail.h"
+#include "Constant.h"
 
 using namespace std;
 
-//////////////////////////////////////////////////////////
+/* global variable */
+LPDIRECT3D9 pD3D = nullptr;       
+LPDIRECT3DDEVICE9 pDevice = nullptr;
+LPD3DXMESH pMesh = nullptr;
+LPDIRECT3DVERTEXBUFFER9 pVertexBuf = nullptr;
+LPDIRECT3DINDEXBUFFER9 pIdxBuf = nullptr;
 
-LPDIRECT3D9             pD3D		= nullptr;       
-LPDIRECT3DDEVICE9       pDevice		= nullptr;
-LPD3DXMESH		        pMesh		= nullptr;
-LPDIRECT3DVERTEXBUFFER9 pVertexBuf	= nullptr;
-LPDIRECT3DINDEXBUFFER9  pIdxBuf		= nullptr;
+Volume volume(
+	Constant::Volume::WIDTH, 
+	Constant::Volume::HEIGHT, 
+	Constant::Volume::DEPTH);
+Chainmail chainmail(volume);
+D3DMATERIAL9 defaultMtrl;
+D3DMATERIAL9 pivotMtrl;
+
+bool bottonDown = false;
+int curX = 0;
+int curY = 0;
+int prevX = 0;
+int prevY = 0;
 
 class VOLUME_VERTEX 
 {
@@ -27,9 +41,7 @@ public:
 
 #define D3DFVF_VOLUME_VERTEX (D3DFVF_XYZ | D3DFVF_DIFFUSE)
 
-//////////////////////////////////////////////////////////
-
-HRESULT initD3D(HWND hWnd)
+static HRESULT initD3D(HWND hWnd)
 {
 	if (!(pD3D = Direct3DCreate9(D3D_SDK_VERSION)))
 		return E_FAIL;
@@ -49,42 +61,21 @@ HRESULT initD3D(HWND hWnd)
 	return S_OK;
 }
 
-//////////////////////////////////////////////////////////
-
-// D3D 좌표계 -> D(y), H(z), W(x)
-
-constexpr int
-	WIDTH	= 6,
-	HEIGHT	= 1,
-	DEPTH	= 6;
-
-constexpr int VERTEX_SIZE = (DEPTH * HEIGHT * WIDTH);
-
-constexpr int INDEX_SIZE =
-	(((WIDTH - 1)* HEIGHT * DEPTH) +
-	(WIDTH * (HEIGHT - 1) * DEPTH) +
-	(WIDTH * HEIGHT * (DEPTH - 1)));
-
-Volume volume(WIDTH, HEIGHT, DEPTH);
-Chainmail chainmail(volume);
-
-//////////////////////////////////////////////////////////
-
-void initVolume()
+static void initVolume()
 {
-	const float HALF_WIDTH = static_cast<float>(WIDTH / 2);
-	const float HALF_HEIGHT = static_cast<float>(HEIGHT / 2);
-	const float HALF_DEPTH = static_cast<float>(DEPTH / 2);
+	const float HALF_WIDTH = static_cast<float>(Constant::Volume::WIDTH / 2);
+	const float HALF_HEIGHT = static_cast<float>(Constant::Volume::HEIGHT / 2);
+	const float HALF_DEPTH = static_cast<float>(Constant::Volume::DEPTH / 2);
 	
-	const int WIDTH_IDX_MAX = (WIDTH - 1);
-	const int HEIGHT_IDX_MAX = (HEIGHT - 1);
-	const int DEPTH_IDX_MAX = (DEPTH - 1);
+	const int WIDTH_IDX_MAX = (Constant::Volume::WIDTH - 1);
+	const int HEIGHT_IDX_MAX = (Constant::Volume::HEIGHT - 1);
+	const int DEPTH_IDX_MAX = (Constant::Volume::DEPTH - 1);
 
 	Voxel*** const pVol = volume.getPtr3D();
 
-	for (int d = 0; d < DEPTH; ++d) 
-		for (int h = 0; h < HEIGHT; ++h) 
-			for (int w = 0; w < WIDTH; ++w) 
+	for (int d = 0; d < Constant::Volume::DEPTH; ++d)
+		for (int h = 0; h < Constant::Volume::HEIGHT; ++h)
+			for (int w = 0; w < Constant::Volume::WIDTH; ++w)
 			{
 				Voxel& curVoxel = pVol[d][h][w];
 
@@ -109,22 +100,22 @@ void initVolume()
 			}
 }
 
-void initChainMail()
+static void initChainMail()
 {
-	chainmail.setPivotIdx(3, 0, 3);
+	chainmail.setPivotIdx(Constant::Chainmail::PIVOT_IDX);
 
-	chainmail.constraint.dX = { 0.7f, 1.3f };
-	chainmail.constraint.dY = { 0.7f, 1.3f };
-	chainmail.constraint.dZ = { 0.7f, 1.3f };
+	chainmail.constraint.dX = Constant::Chainmail::DX;
+	chainmail.constraint.dY = Constant::Chainmail::DY;
+	chainmail.constraint.dZ = Constant::Chainmail::DZ;
 
-	chainmail.constraint.shearX = 0.3f;
-	chainmail.constraint.shearY = 0.3f;
-	chainmail.constraint.shearZ = 0.3f;
+	chainmail.constraint.shearX = Constant::Chainmail::SHEAR.x;
+	chainmail.constraint.shearY = Constant::Chainmail::SHEAR.y;
+	chainmail.constraint.shearZ = Constant::Chainmail::SHEAR.z;
 
-	chainmail.setElasticity(0.7f);
+	chainmail.setElasticity(Constant::Chainmail::ELASTICITY);
 }
 
-void chainmailPropagate(const float x, const float y, const float z) 
+static void chainmailPropagate(const float x, const float y, const float z) 
 {
 	chainmail.propagate(x, y, z);
 
@@ -136,25 +127,29 @@ void chainmailPropagate(const float x, const float y, const float z)
 	Voxel*** const pVol = volume.getPtr3D();
 
 	int i = 0;
-	for (int d = 0; d < DEPTH; ++d)
-		for (int h = 0; h < HEIGHT; ++h)
-			for (int w = 0; w < WIDTH; ++w)
+	for (int d = 0; d < Constant::Volume::DEPTH; ++d)
+		for (int h = 0; h < Constant::Volume::HEIGHT; ++h)
+			for (int w = 0; w < Constant::Volume::WIDTH; ++w)
 				pVertices[i++].position = pVol[d][h][w].position;
 
 	pVertexBuf->Unlock();
 }
 
-HRESULT initGeometry()
+static HRESULT initGeometry()
 {
 	if (FAILED(pDevice->CreateVertexBuffer(
-		(VERTEX_SIZE * sizeof(VOLUME_VERTEX)), 0,
+		(Constant::Geometry::VERTEX_SIZE * sizeof(VOLUME_VERTEX)), 0,
 		D3DFVF_VOLUME_VERTEX, D3DPOOL_DEFAULT, &pVertexBuf, NULL)))
 		return E_FAIL;
 
 	if (FAILED(pDevice->CreateIndexBuffer(
-		INDEX_SIZE * sizeof(LINE_INDEX), 0,
+		Constant::Geometry::INDEX_SIZE * sizeof(LINE_INDEX), 0,
 		D3DFMT_INDEX32, D3DPOOL_DEFAULT, &pIdxBuf, NULL)))
 		return E_FAIL;
+
+	D3DXCreateSphere(pDevice, 0.15f, 40, 40, &pMesh, NULL);
+
+	//////////////////////////////////////////////////////////
 
 	VOLUME_VERTEX* pVertices = nullptr;
 
@@ -164,9 +159,9 @@ HRESULT initGeometry()
 	Voxel*** const pVol = volume.getPtr3D();
 
 	int i = 0;
-	for (int d = 0; d < DEPTH; ++d)
-		for (int h = 0; h < HEIGHT; ++h)
-			for (int w = 0; w < WIDTH; ++w)
+	for (int d = 0; d < Constant::Volume::DEPTH; ++d)
+		for (int h = 0; h < Constant::Volume::HEIGHT; ++h)
+			for (int w = 0; w < Constant::Volume::WIDTH; ++w)
 			{
 				pVertices[i].position = pVol[d][h][w].position;
 				pVertices[i].color = 0xFF5E3309;
@@ -184,32 +179,51 @@ HRESULT initGeometry()
 		return E_FAIL;
 
 	int offset = 0;
-	const int X_AXIS_ITER = (DEPTH * HEIGHT * (WIDTH - 1));
+
+	const int X_AXIS_ITER = 
+		(Constant::Volume::DEPTH * 
+		Constant::Volume::HEIGHT * 
+		(Constant::Volume::WIDTH - 1));
 
 	for (i = 0; i < X_AXIS_ITER; ++i) 
 	{
-		pIndices[offset].start = (i + (i / (WIDTH - 1)));
+		pIndices[offset].start = 
+			(i + (i / (Constant::Volume::WIDTH - 1)));
+
 		pIndices[offset].end = (pIndices[i].start + 1);
 		
 		++offset;
 	}
 
-	const int Y_AXIS_ITER = ((DEPTH - 1) * HEIGHT * WIDTH);
+	const int Y_AXIS_ITER = 
+		((Constant::Volume::DEPTH - 1) * 
+		Constant::Volume::HEIGHT * 
+		Constant::Volume::WIDTH);
 	
 	for (i = 0; i < Y_AXIS_ITER; ++i) 
 	{
 		pIndices[offset].start = i;
-		pIndices[offset].end = (i + (WIDTH * HEIGHT));
+
+		pIndices[offset].end = 
+			(i + (Constant::Volume::WIDTH * Constant::Volume::HEIGHT));
 
 		++offset;
 	}
 
-	const int Z_AXIS_ITER = (DEPTH * (HEIGHT - 1) * WIDTH);
+	const int Z_AXIS_ITER = 
+		(Constant::Volume::DEPTH * 
+		(Constant::Volume::HEIGHT - 1) * 
+		Constant::Volume::WIDTH);
 
 	for (i = 0; i < Z_AXIS_ITER; ++i) 
 	{
-		pIndices[offset].start = (i + (WIDTH * (i / (WIDTH * (HEIGHT - 1)))));
-		pIndices[offset].end = (WIDTH + pIndices[offset].start);
+		pIndices[offset].start = 
+			(i + (Constant::Volume::WIDTH * 
+			(i / (Constant::Volume::WIDTH * 
+			(Constant::Volume::HEIGHT - 1)))));
+
+		pIndices[offset].end = 
+			(Constant::Volume::WIDTH + pIndices[offset].start);
 		
 		++offset;
 	}
@@ -219,7 +233,7 @@ HRESULT initGeometry()
 	return S_OK;
 }
 
-void cleanup()
+static void cleanup()
 {
 	if (pIdxBuf)
 		pIdxBuf->Release();
@@ -237,11 +251,11 @@ void cleanup()
 		pD3D->Release();
 }
 
-void setupViewProjection()
+static void setupViewProjection()
 {
-	D3DXVECTOR3 vEyePt(100.f, 100.f, -300.f);   
-	D3DXVECTOR3 vLookatPt(0.f, 0.f, 0.f);      
-	D3DXVECTOR3 vUpVec(0.0f, 1.0f, 0.0f);          
+	D3DXVECTOR3 vEyePt = Constant::Camera::EYE;
+	D3DXVECTOR3 vLookatPt = Constant::Camera::AT;
+	D3DXVECTOR3 vUpVec = Constant::Camera::UPVECTOR;
 	
 	D3DXMATRIXA16 matView;                           
 	D3DXMatrixLookAtLH(&matView, &vEyePt, &vLookatPt, &vUpVec);
@@ -254,20 +268,46 @@ void setupViewProjection()
 	pDevice->SetTransform(D3DTS_PROJECTION, &matProj);
 }
 
-void setupLight()
+static void setupLight()
 {
 	D3DLIGHT9 light;
 	ZeroMemory(&light, sizeof(D3DLIGHT9));
 
-	light.Type		= D3DLIGHT_DIRECTIONAL;
-	light.Diffuse	= { 1.f, 1.f, 1.f, 1.f };
-	light.Specular	= { 1.f, 1.f, 1.f, 1.f };
-	light.Direction = { 10.f, -10.f, 10.f };
+	light.Type = D3DLIGHT_DIRECTIONAL;
+	light.Diffuse = Constant::Light::DIFFUSE;
+	light.Specular = Constant::Light::SPECULAR;
+	light.Direction = Constant::Light::DIRECTION;
 
 	pDevice->SetLight(0, &light);
 	pDevice->LightEnable(0, TRUE);
-	pDevice->SetRenderState(D3DRS_LIGHTING, TRUE);
 	pDevice->SetRenderState(D3DRS_AMBIENT, 0x00202020);
+}
+
+static void setupMaterial() 
+{
+	ZeroMemory(&defaultMtrl, sizeof(D3DMATERIAL9));
+	defaultMtrl.Diffuse.r = defaultMtrl.Ambient.r = 
+		Constant::Material::Default::DIFFUSE.r;
+	defaultMtrl.Diffuse.g = defaultMtrl.Ambient.g = 
+		Constant::Material::Default::DIFFUSE.g;
+	defaultMtrl.Diffuse.b = defaultMtrl.Ambient.b = 
+		Constant::Material::Default::DIFFUSE.b;
+	defaultMtrl.Diffuse.a = defaultMtrl.Ambient.a =
+		Constant::Material::Default::DIFFUSE.a;
+	defaultMtrl.Specular =
+		Constant::Material::Default::SPECULAR;
+
+	ZeroMemory(&pivotMtrl, sizeof(D3DMATERIAL9));
+	pivotMtrl.Diffuse.r = pivotMtrl.Ambient.r = 
+		Constant::Material::Pivot::DIFFUSE.r;
+	pivotMtrl.Diffuse.g = pivotMtrl.Ambient.g = 
+		Constant::Material::Pivot::DIFFUSE.g;
+	pivotMtrl.Diffuse.b = pivotMtrl.Ambient.b = 
+		Constant::Material::Pivot::DIFFUSE.b;
+	pivotMtrl.Diffuse.a = pivotMtrl.Ambient.a = 
+		Constant::Material::Pivot::DIFFUSE.a;
+	pivotMtrl.Specular = 
+		Constant::Material::Pivot::SPECULAR;
 }
 
 void render()
@@ -275,85 +315,63 @@ void render()
 	if (!pDevice)  
 		return;
 
-	pDevice->SetTexture(0, NULL);
-	pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 	pDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(0, 0, 0), 1.f, 0);
-
-	setupViewProjection();
-	setupLight();
-
-	////////////////////////////////////////////////////
-
-	D3DMATERIAL9 defaultMtrl;
-	ZeroMemory(&defaultMtrl, sizeof(D3DMATERIAL9));
-
-	defaultMtrl.Diffuse.r = defaultMtrl.Ambient.r = 0.f;
-	defaultMtrl.Diffuse.g = defaultMtrl.Ambient.g = 0.4f;
-	defaultMtrl.Diffuse.b = defaultMtrl.Ambient.b = 0.f;
-	defaultMtrl.Diffuse.a = defaultMtrl.Ambient.a = 1.f;
-	defaultMtrl.Specular = { 1.f, 1.f, 1.f, 1.f };
-
-	D3DMATERIAL9 pivotMtrl;
-	ZeroMemory(&pivotMtrl, sizeof(D3DMATERIAL9));
-
-	pivotMtrl.Diffuse.r = pivotMtrl.Ambient.r = 1.f;
-	pivotMtrl.Diffuse.g = pivotMtrl.Ambient.g = 0.1f;
-	pivotMtrl.Diffuse.b = pivotMtrl.Ambient.b = 0.1f;
-	pivotMtrl.Diffuse.a = pivotMtrl.Ambient.a = 1.f;
-	pivotMtrl.Specular = { 1.f, 1.f, 1.f, 1.f };
-
-	////////////////////////////////////////////////////
 
 	if (SUCCEEDED(pDevice->BeginScene()))
 	{
 		D3DXMATRIXA16 matWorld;
 
-		const float DEPTH_HALF = static_cast<float>(DEPTH / 2);
-		const float HEIGHT_HALF = static_cast<float>(HEIGHT / 2);
-		const float WIDTH_HALF = static_cast<float>(WIDTH / 2);
+		const float HALF_DEPTH = 
+			static_cast<float>(Constant::Volume::DEPTH / 2);
+		const float HALF_HEIGHT = 
+			static_cast<float>(Constant::Volume::HEIGHT / 2);
+		const float HALF_WIDTH =
+			static_cast<float>(Constant::Volume::WIDTH / 2);
 
-		Index pivotIdx = chainmail.getPivotIdx();
+		const Index PIVOT_IDX = chainmail.getPivotIdx();
 		Voxel*** const pVol = volume.getPtr3D();
 
-		for (int d = 0; d < DEPTH; ++d)
-			for (int h = 0; h < HEIGHT; ++h)
-				for (int w = 0; w < WIDTH; ++w) 
+		pDevice->SetRenderState(D3DRS_LIGHTING, TRUE);
+
+		for (int d = 0; d < Constant::Volume::DEPTH; ++d)
+			for (int h = 0; h < Constant::Volume::HEIGHT; ++h)
+				for (int w = 0; w < Constant::Volume::WIDTH; ++w)
 				{
-					if (pivotIdx == Index(w, h, d))
+					if (PIVOT_IDX == Index(w, h, d))
 						pDevice->SetMaterial(&pivotMtrl);
 					else
 						pDevice->SetMaterial(&defaultMtrl);
 
 					Voxel& curVoxel = pVol[d][h][w];
-					D3DXMatrixTranslation(&matWorld, (curVoxel.position.x), (curVoxel.position.y), (curVoxel.position.z));
+					D3DXMatrixTranslation(
+						&matWorld, 
+						(curVoxel.position.x), 
+						(curVoxel.position.y), 
+						(curVoxel.position.z));
+					
 					pDevice->SetTransform(D3DTS_WORLD, &matWorld);
 					pMesh->DrawSubset(0);
 				}
 
-		////////////////////////////////////////////////////
-
 		pDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
-
 		D3DXMatrixIdentity(&matWorld);
-		pDevice->SetTransform(D3DTS_WORLD, &matWorld);
 
+		// 복셀을 연결하는 라인을 그린다.
+		pDevice->SetTransform(D3DTS_WORLD, &matWorld);
 		pDevice->SetStreamSource(0, pVertexBuf, 0, sizeof(VOLUME_VERTEX));
 		pDevice->SetIndices(pIdxBuf);
-
 		pDevice->SetFVF(D3DFVF_VOLUME_VERTEX);
-		pDevice->DrawIndexedPrimitive(D3DPT_LINELIST, 0, 0, VERTEX_SIZE, 0, INDEX_SIZE);
+		pDevice->DrawIndexedPrimitive(
+			D3DPT_LINELIST, 0, 0, 
+			Constant::Geometry::VERTEX_SIZE, 
+			0, 
+			Constant::Geometry::INDEX_SIZE);
 		
 		pDevice->EndScene();
 	}
 
 	pDevice->Present(NULL, NULL, NULL, NULL);
 }
-
-bool bottonDown = false;
-int curX = 0;
-int curY = 0;
-int prevX = 0;
-int prevY = 0;
 
 LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -399,31 +417,29 @@ LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return DefWindowProc(hWnd, msg, wParam, lParam);
 }
 
-//////////////////////////////////////////////////////////
-
-#define WINDOW_WIDTH  800
-#define WINDOW_HEIGHT 800
-
-//////////////////////////////////////////////////////////
-
 INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT)
 {
 	WNDCLASSEX wc = { sizeof(WNDCLASSEX), CS_CLASSDC, MsgProc, 0L, 0L,
-		GetModuleHandle(NULL), NULL, NULL, NULL, NULL, TEXT("CHAINMAIL"), NULL };
+		GetModuleHandle(NULL), NULL, NULL, NULL, NULL, 
+		Constant::Screen::TITLE, NULL };
 	
 	RegisterClassEx(&wc);
 
-	HWND hWnd = CreateWindow(TEXT("CHAINMAIL"), TEXT("WEEK03"),
-		WS_OVERLAPPEDWINDOW, 50, 50, WINDOW_WIDTH, WINDOW_HEIGHT,
+	HWND hWnd = CreateWindow(
+		Constant::Screen::TITLE, Constant::Screen::TITLE,
+		WS_OVERLAPPEDWINDOW, 50, 50, 
+		Constant::Screen::WIDTH, Constant::Screen::HEIGHT,
 		GetDesktopWindow(), NULL, wc.hInstance, NULL);
+
+	initVolume();
+	initChainMail();
 
 	if (SUCCEEDED(initD3D(hWnd)) && 
 		SUCCEEDED(initGeometry()))
 	{
-		initVolume();
-		initChainMail();
-
-		D3DXCreateSphere(pDevice, 0.15f, 40, 40, &pMesh, NULL);
+		setupMaterial();
+		setupLight();
+		setupViewProjection();
 
 		ShowWindow(hWnd, SW_SHOWDEFAULT);
 		UpdateWindow(hWnd);
@@ -442,6 +458,6 @@ INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, INT)
 		}
 	}
 
-	UnregisterClass(TEXT("CHAINMAIL"), wc.hInstance);
+	UnregisterClass(Constant::Screen::TITLE, wc.hInstance);
 	return 0;
 }

@@ -25,11 +25,11 @@
     <Filter Include="소스 파일\util">
       <UniqueIdentifier>{2b08d894-6a9c-4fba-acd9-a278f008e0ae}</UniqueIdentifier>
     </Filter>
-    <Filter Include="헤더 파일\chainmail">
-      <UniqueIdentifier>{3fcb902b-4ded-4c61-b0d5-57f327389f41}</UniqueIdentifier>
+    <Filter Include="헤더 파일\common">
+      <UniqueIdentifier>{e482ac7e-5b75-4792-96ac-cda97753cd4f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\chainmail">
-      <UniqueIdentifier>{8d86df6c-c267-4c27-bb51-0b21ccb8d8ad}</UniqueIdentifier>
+    <Filter Include="소스 파일\common">
+      <UniqueIdentifier>{47f20c5a-9547-4b14-ac09-b70227a8101e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -42,20 +42,23 @@
     <ClCompile Include="MathUtility.cpp">
       <Filter>소스 파일\util</Filter>
     </ClCompile>
-    <ClCompile Include="Voxel.cpp">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="Index.cpp">
+      <Filter>소스 파일\data_structure</Filter>
+    </ClCompile>
+    <ClCompile Include="Plasticity.cpp">
+      <Filter>소스 파일\data_structure</Filter>
     </ClCompile>
     <ClCompile Include="Volume.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="Index.cpp">
-      <Filter>소스 파일\data_structure</Filter>
+    <ClCompile Include="Voxel.cpp">
+      <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="Chainmail.cpp">
-      <Filter>소스 파일\chainmail</Filter>
+      <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="Plasticity.cpp">
-      <Filter>소스 파일\data_structure</Filter>
+    <ClCompile Include="Constant.cpp">
+      <Filter>소스 파일\common</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -68,15 +71,6 @@
     <ClInclude Include="Point3f.h">
       <Filter>헤더 파일\data_structure</Filter>
     </ClInclude>
-    <ClInclude Include="Volume.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="Voxel.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="Chainmail.h">
-      <Filter>헤더 파일\chainmail</Filter>
-    </ClInclude>
     <ClInclude Include="Constraint.h">
       <Filter>헤더 파일\data_structure</Filter>
     </ClInclude>
@@ -88,6 +82,18 @@
     </ClInclude>
     <ClInclude Include="Plasticity.h">
       <Filter>헤더 파일\data_structure</Filter>
+    </ClInclude>
+    <ClInclude Include="Chainmail.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Volume.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Voxel.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Constant.h">
+      <Filter>헤더 파일\common</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
